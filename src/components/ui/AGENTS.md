@@ -1,107 +1,114 @@
-# Padrões de Componentes UI
-
-## Estrutura de Arquivos
-
-Cada componente deve seguir esta estrutura:
-
-```
-src/components/ui/
-├── index.ts          # Barrel exports
-├── button.tsx        # Componente individual
-└── agents.md         # Este arquivo
-```
-
-## Padrões de Criação
-
-### 1. Named Exports
-- **Sempre** usar named exports, nunca default exports
-- Exportar o componente e as variantes separadamente
+individual exports** with component prefix (never dot notation):
 
 ```tsx
-// ✅ Correto
-export { Button, buttonVariants };
-export type { ButtonProps };
+import type { ComponentProps } from "react";
+import { tv } from "tailwind-variants";
 
-// ❌ Errado
-export default Button;
-```
+const card = tv({ 
+base: ["flex flex-col gap-3 p-5", "border border-border-primary"],
+});
 
-### 2. Extensão de Props Nativas
-- Estender as propriedades nativas do elemento HTML
-- Usar `forwardRef` para permitir ref forwarding
+type CardRootProps = ComponentProps<"div">;
 
-```tsx
-import { type ButtonHTMLAttributes, forwardRef } from 'react';
-
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'primary' | 'outline';
-  size?: 'sm' | 'md' | 'lg';
+function CardRoot({ className, ...props }: CardRootProps) { 
+return <div className={card({ className })} {...props} />;
 }
 
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, ...props }, ref) => {
-    return <button ref={ref} {...props} />;
-  }
+type CardTitleProps = ComponentProps<"p">;
+
+function CardTitle({ className, ...props }: CardTitleProps) { 
+return ( 
+<p 
+className={tv({ base: "font-mono text-[13px] text-text-primary" })({ 
+className, 
+})} 
+{...props} 
+/> 
 );
+}
+
+type CardDescriptionProps = ComponentProps<"p">;
+
+function CardDescription({ className, ...props }: CardDescriptionProps) { 
+return ( 
+<p 
+className={tv({ base: "text-xs leading-relaxed text-text-secondary" })({ 
+className, 
+})} 
+{...props} 
+/> 
+);
+}
+
+export { 
+CardRoot, 
+CardTitle, 
+CardDescription, 
+card, 
+type CardRootProps, 
+type CardTitleProps, 
+type CardDescriptionProps,
+};
 ```
 
-### 3. Tailwind Variants (tv)
-- Usar `tailwind-variants` para criar variantes
-- Usar `tailwind-merge` automaticamente via tv
+**Use:**
 
 ```tsx
-import { tv, type VariantProps } from 'tailwind-variants';
+<CardRoot> 
+<Badge variant="critical">critical</Badge> 
+<CardTitle>using var instead of const/let</CardTitle> 
+<CardDescription>the var keyword is...</CardDescription>
+</CardRoot>
+```
 
-const buttonVariants = tv({
-  base: 'base classes shared',
-  variants: {
-    variant: {
-      default: '...',
-      primary: '...',
-    },
-    size: {
-      sm: '...',
-      md: '...',
-    },
-  },
-  defaultVariants: {
-    variant: 'default',
-    size: 'md',
-  },
+## Component structure (simple primitive)
+
+```tsx
+import type { ComponentProps } from "react";
+import { tv, type VariantProps } from "tailwind-variants";
+
+// 1. Define variants with tv()
+const myComponent = tv({ 
+base: [...], 
+variants: { ... }, 
+defaultVariants: { ... },
 });
+
+// 2. Extract type from variants
+type MyComponentVariants = VariantProps<typeof myComponent>;
+
+// 3. Combine with native HTML element props
+type MyComponentProps = ComponentProps<"div"> & MyComponentVariants;
+
+// 4. Implement the component
+function MyComponent({ variant, size, className, ...props }: MyComponentProps) { 
+return ( 
+<div className={myComponent({ variant, size, className })} {...props} /> 
+);
+}
+
+// 5. Named exports of everything
+export { 
+MyComponent, 
+myComponent, 
+type MyComponentProps, 
+type MyComponentVariants,
+};
 ```
 
-### 4. Arquivo index.ts
-- Usar barrel exports para simplificar imports
-- Exportar tipos primeiro, depois valores
+## Checklist for new components
 
-```tsx
-export type { ButtonProps } from './button';
-export { Button, buttonVariants } from './button';
-```
-
-### 5. Biome/Linting
-- Sempre formatar com `pnpm biome format --write`
-- Verificar com `pnpm biome check`
-
-## Checklist de Criação
-
-- [ ] Criar arquivo `componente.tsx` em `src/components/ui/`
-- [ ] Usar named exports
-- [ ] Estender props nativas com `forwardRef`
-- [ ] Implementar `tailwind-variants`
-- [ ] Adicionar variantes no `src/components/ui/index.ts`
-- [ ] Formatar com Biome
-- [ ] Verificar com Biome
-
-## Exemplo de Uso
-
-```tsx
-import { Button, buttonVariants } from '@/components/ui';
-
-// Via componente
-<Button variant="primary" size="md">Click me</Button>
-
-// Via variantes (para composicao customizada)
-<span className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
-```
+- [ ] Kebab-case file inside `src/components/ui/`
+- [ ] Named exports (component, tv function, types)
+- [ ] Native props extended via `ComponentProps<"element">`
+- [ ] Variants defined with `tailwind-variants`
+- [ ] `className` passed via `tv({ ..., className })` or `twMerge()` (never string interpolation)
+- [ ] Colors via Tailwind canonical classes (`bg-accent-green`, `text-text-primary`)
+- [ ] Native Tailwind classes when applicable (`text-white`, `bg-transparent`)
+- [ ] Fonts via `font-sans` / `font-mono` (never custom classes)
+- [ ] No hardcoded hex colors (except SVG attributes with `var(--color-*)`)
+- [ ] No `export default`
+- [ ] No `bg-(--color-*)` syntax — use canonical class
+- [ ] Composition (sub-components) for components with 2+ distinct content areas
+- [ ] Simple props for atomic primitives and numeric/functional configuration
+- [ ] Add variant to examples page (`/components`)
