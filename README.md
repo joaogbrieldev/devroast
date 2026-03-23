@@ -1,27 +1,96 @@
 # DevRoast
 
-Paste your code. Get roasted.
+DevRoast is a web app that analyzes source code quality with AI and returns a score, actionable feedback, and an improved version of the submitted snippet.  
+It can run in professional mode (direct and constructive) or roast mode (sarcastic and entertaining).
 
-DevRoast is a code quality analyzer that gives your code a brutally honest score from 0 to 10. Submit any snippet, enable "roast mode" for maximum sarcasm, and find out just how bad (or good) your code really is.
+## Highlights
 
-Built during the **NLW** event by [Rocketseat](https://rocketseat.com.br), across the event's lessons.
+- AI-powered code review with a **0.0 to 10.0** score
+- Structured findings grouped by severity (`critical`, `warning`, `good`)
+- Suggested fixed version of the submitted code
+- Optional roast mode for humorous feedback
+- Leaderboard and statistics backed by PostgreSQL
 
-## Features
+## Tech Stack
 
-- **Code submission** — paste any code snippet and get an instant quality score
-- **Roast mode** — toggle brutal sarcasm for a more entertaining analysis
-- **Detailed analysis** — get specific feedback on what's wrong (and right) with your code, with severity levels (critical, warning, good)
-- **Suggested fixes** — see a diff of what your code could look like with improvements applied
-- **Shame leaderboard** — the worst code on the internet, ranked by shame. See how your code compares
+- **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS v4
+- **API/Data layer:** tRPC v11 + TanStack React Query v5
+- **Database:** PostgreSQL 16 + Drizzle ORM / Drizzle Kit
+- **Validation:** Zod
+- **Tooling:** TypeScript (strict), Biome, pnpm
 
-## Getting Started
+## Prerequisites
+
+- Node.js 20+
+- pnpm 9+
+- Docker (recommended for local PostgreSQL)
+- OpenAI API key
+
+## Environment Variables
+
+Create `.env.local` in the project root:
 
 ```bash
-# Install dependencies
-pnpm install
+DATABASE_URL=postgresql://devroast:devroast@localhost:5432/devroast
+OPENAI_API_KEY=your_openai_api_key
+```
 
-# Run the development server
+## Local Setup
+
+1. Install dependencies:
+
+```bash
+pnpm install
+```
+
+2. Start PostgreSQL with Docker:
+
+```bash
+docker compose up -d
+```
+
+3. Create/apply schema and seed data:
+
+```bash
+pnpm db:push
+pnpm db:seed
+```
+
+4. Start the app:
+
+```bash
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the app.
+Open [http://localhost:3000](http://localhost:3000).
+
+## Available Scripts
+
+- `pnpm dev` - run the development server
+- `pnpm build` - create production build
+- `pnpm start` - run production server
+- `pnpm lint` - run Biome checks
+- `pnpm format` - format and apply safe fixes with Biome
+- `pnpm db:generate` - generate Drizzle migrations
+- `pnpm db:migrate` - run Drizzle migrations
+- `pnpm db:push` - push schema directly to database
+- `pnpm db:studio` - open Drizzle Studio
+- `pnpm db:seed` - seed database with sample records
+
+## Project Structure
+
+```text
+src/
+  app/          # Next.js routes, layouts, and pages
+  components/   # feature components and UI primitives
+  db/           # Drizzle schema, db client, and seeds
+  hooks/        # custom React hooks
+  lib/          # shared constants and utilities
+  trpc/         # tRPC client/server infrastructure
+specs/          # feature specifications
+docs/           # supporting documentation
+```
+
+## License
+
+This project is available for study and experimentation.
